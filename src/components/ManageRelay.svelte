@@ -24,7 +24,6 @@
 	import SettingsControl from "./SettingsControl.svelte";
 	import { uuidv4 } from "lib0/random";
 	import Lock from "./Lock.svelte";
-	import Breadcrumbs from "./Breadcrumbs.svelte";
 	import DiskUsage from "./DiskUsage.svelte";
 	import { ShareFolderModal } from "src/ui/ShareFolderModal";
 	import { AddToVaultModal } from "src/ui/AddToVaultModal";
@@ -519,18 +518,6 @@
 	});
 </script>
 
-<Breadcrumbs
-	items={[
-		{
-			type: "home",
-			onClick: () => dispatch("goBack", { clear: true }),
-		},
-		{
-			type: "relay",
-			relay: relay,
-		},
-	]}
-/>
 
 {#if !$hintDismissed && isNewUser() && relay.name}
 	{#if $remoteFolders.values().length > 0 && !$hasDownloadedFolders && !$relay.owner}

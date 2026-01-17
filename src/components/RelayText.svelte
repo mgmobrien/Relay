@@ -19,5 +19,6 @@
 <style>
 	.relay-text {
 		fill: var(--text-normal);
+		display: block;
 	}
 </style>

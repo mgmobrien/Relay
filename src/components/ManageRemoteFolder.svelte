@@ -14,7 +14,6 @@
 	import { createEventDispatcher, onMount } from "svelte";
 	import { derived, writable } from "svelte/store";
 	import type { ObservableMap } from "src/observable/ObservableMap";
-	import Breadcrumbs from "./Breadcrumbs.svelte";
 	import AccountSettingItem from "./AccountSettingItem.svelte";
 	import { AddToVaultModal } from "src/ui/AddToVaultModal";
 	import { curryLog } from "src/debug";
@@ -387,27 +386,6 @@
 	}
 </script>
 
-<Breadcrumbs
-	items={[
-		{
-			type: "home",
-			onClick: () => dispatch("goBack", { clear: true }),
-		},
-		{
-			type: "relay",
-			relay: $remoteFolder.relay,
-			onClick: () => handleManageRelay($remoteFolder.relay),
-		},
-		{
-			type: "remoteFolder",
-			remoteFolder: {
-				...$remoteFolder,
-				name: displayName,
-				private: isPrivate,
-			},
-		},
-	]}
-/>
 
 {#if $canManageUsers && !$canReadFolder}
 	<div

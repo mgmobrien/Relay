@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { debounce, Notice, Platform } from "obsidian";
 	import type Live from "../main";
-	import GetInTouch from "./GetInTouch.svelte";
 	import WelcomeHeader from "./WelcomeHeader.svelte";
 	import WelcomeFooter from "./WelcomeFooter.svelte";
 	import AccountSettingItem from "./AccountSettingItem.svelte";
@@ -9,7 +8,6 @@
 	import Callout from "./Callout.svelte";
 	import Discord from "./Discord.svelte";
 	import Announcement from "./Announcement.svelte";
-	import RelayText from "./RelayText.svelte";
 	import type { LoginManager, Provider } from "src/LoginManager";
 	import { derived, writable } from "svelte/store";
 	import { onMount } from "svelte";
@@ -306,18 +304,6 @@
 </script>
 
 {#if $lm.hasUser && $lm.user}
-	<SettingItemHeading>
-		<RelayText slot="name" />
-		<GetInTouch />
-	</SettingItemHeading>
-	<SettingItemHeading name="Account"></SettingItemHeading>
-	<AccountSettingItem user={$lm.user}>
-		<button
-			on:click={debounce(() => {
-				logout();
-			})}>Logout</button
-		>
-	</AccountSettingItem>
 	<slot></slot>
 {:else}
 	{#if Platform.isMobile}

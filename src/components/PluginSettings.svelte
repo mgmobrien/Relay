@@ -2,8 +2,9 @@
 	import LoggedIn from "./LoggedIn.svelte";
 	import Relays from "./Relays.svelte";
 	import ManageRelay from "./ManageRelay.svelte";
+	import ManageAccount from "./ManageAccount.svelte";
 	import { type Relay } from "../Relay";
-	import ModalSettingsNav from "./ModalSettingsNav.svelte";
+	import SettingsHeader from "./SettingsHeader.svelte";
 	import type Live from "src/main";
 	import type { SharedFolder } from "src/SharedFolder";
 	import ManageSharedFolder from "./ManageSharedFolder.svelte";
@@ -14,6 +15,7 @@
 	import { flags } from "../flagManager";
 	import { Platform } from "obsidian";
 	import Announcement from "./Announcement.svelte";
+	import SettingsFooter from "./SettingsFooter.svelte";
 
 	interface RelayEventDetail {
 		relay: Relay;
@@ -23,11 +25,13 @@
 		currentRelay?: Relay;
 		sharedFolder?: SharedFolder;
 		remoteFolder?: RemoteSharedFolder;
+		showAccount?: boolean;
 		component:
 			| typeof Relays
 			| typeof ManageRelay
 			| typeof ManageSharedFolder
-			| typeof ManageRemoteFolder;
+			| typeof ManageRemoteFolder
+			| typeof ManageAccount;
 	}
 
 	interface SharedFolderEventDetail {
@@ -59,11 +63,15 @@
 		| typeof Relays
 		| typeof ManageRelay
 		| typeof ManageSharedFolder
-		| typeof ManageRemoteFolder = Relays;
+		| typeof ManageRemoteFolder
+		| typeof ManageAccount = Relays;
 
 	let currentRelay: Relay | undefined;
 	let remoteFolder: RemoteSharedFolder | undefined;
+	let showAccount = false;
 	const history: View[] = [{ component: Relays }];
+
+	const lm = plugin.loginManager;
 
 	export let close: () => void;
 
@@ -189,6 +197,7 @@
 			currentRelay = undefined;
 			sharedFolder = undefined;
 			remoteFolder = undefined;
+			showAccount = false;
 			currentComponent = Relays;
 			return;
 		}
@@ -196,21 +205,24 @@
 		let view = history.pop();
 		if (view) {
 			while (view) {
-				if (!view.currentRelay && !view.sharedFolder && !view.remoteFolder) {
+				if (!view.currentRelay && !view.sharedFolder && !view.remoteFolder && !view.showAccount) {
 					currentRelay = view.currentRelay;
 					sharedFolder = view.sharedFolder;
 					remoteFolder = view.remoteFolder;
+					showAccount = view.showAccount || false;
 					currentComponent = view.component;
 				} else if (view.sharedFolder && sharedFolders.has(view.sharedFolder)) {
 					currentRelay = view.currentRelay;
 					sharedFolder = view.sharedFolder;
 					remoteFolder = view.remoteFolder;
+					showAccount = view.showAccount || false;
 					currentComponent = view.component;
 					break;
 				} else if (view.remoteFolder) {
 					currentRelay = view.currentRelay;
 					sharedFolder = view.sharedFolder;
 					remoteFolder = view.remoteFolder;
+					showAccount = view.showAccount || false;
 					currentComponent = view.component;
 					break;
 				} else if (
@@ -220,6 +232,14 @@
 					currentRelay = view.currentRelay;
 					sharedFolder = view.sharedFolder;
 					remoteFolder = view.remoteFolder;
+					showAccount = view.showAccount || false;
+					currentComponent = view.component;
+					break;
+				} else if (view.showAccount) {
+					currentRelay = view.currentRelay;
+					sharedFolder = view.sharedFolder;
+					remoteFolder = view.remoteFolder;
+					showAccount = view.showAccount;
 					currentComponent = view.component;
 					break;
 				}
@@ -229,6 +249,7 @@
 			currentRelay = undefined;
 			sharedFolder = undefined;
 			remoteFolder = undefined;
+			showAccount = false;
 			currentComponent = Relays;
 		}
 	}
@@ -241,6 +262,37 @@
 	function handleJoinRelay(event: JoinRelayEvent) {
 		currentRelay = event.detail.relay;
 		currentComponent = ManageRelay;
+	}
+
+	function handleGoToRelay(event: CustomEvent<{ relay: Relay }>) {
+		// Navigate to relay, clearing folder state
+		history.push({
+			currentRelay,
+			sharedFolder,
+			remoteFolder,
+			showAccount,
+			component: currentComponent,
+		});
+		currentRelay = event.detail.relay;
+		sharedFolder = undefined;
+		remoteFolder = undefined;
+		showAccount = false;
+		currentComponent = ManageRelay;
+	}
+
+	function handleGoToAccount() {
+		history.push({
+			currentRelay,
+			sharedFolder,
+			remoteFolder,
+			showAccount,
+			component: currentComponent,
+		});
+		currentRelay = undefined;
+		sharedFolder = undefined;
+		remoteFolder = undefined;
+		showAccount = true;
+		currentComponent = ManageAccount;
 	}
 
 	$: {
@@ -268,13 +320,26 @@
 	}
 </script>
 
-{#if currentRelay || sharedFolder || remoteFolder}
-	<ModalSettingsNav on:goBack={handleGoBack}></ModalSettingsNav>
-{:else if !Platform.isMobile}
-	<Announcement {plugin} />
-{/if}
+<SettingsHeader
+	relay={currentRelay}
+	{remoteFolder}
+	{sharedFolder}
+	user={$lm.hasUser ? $lm.user : undefined}
+	on:goBack={handleGoBack}
+	on:goToRelay={handleGoToRelay}
+	on:goToAccount={handleGoToAccount}
+/>
 <div class="vertical-tab-content">
-	{#if remoteFolder}
+	{#if !currentRelay && !sharedFolder && !remoteFolder && !showAccount && !Platform.isMobile}
+		<Announcement {plugin} />
+	{/if}
+	{#if showAccount && $lm.hasUser && $lm.user}
+		<ManageAccount
+			{plugin}
+			user={$lm.user}
+			on:goBack={handleGoBack}
+		/>
+	{:else if remoteFolder}
 		<ManageRemoteFolder
 			{plugin}
 			{remoteFolder}
@@ -319,6 +384,7 @@
 			></Relays>
 		</LoggedIn>
 	{/if}
+	<SettingsFooter {plugin} />
 </div>
 
 {#if flags().enableToasts}

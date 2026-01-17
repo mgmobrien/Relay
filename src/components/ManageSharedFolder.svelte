@@ -6,7 +6,6 @@
 	import { type SharedFolder } from "src/SharedFolder";
 	import { debounce } from "obsidian";
 	import { createEventDispatcher, onDestroy, onMount } from "svelte";
-	import Breadcrumbs from "./Breadcrumbs.svelte";
 
 	export let plugin: Live;
 	export let sharedFolder: SharedFolder;
@@ -31,18 +30,6 @@
 	}
 </script>
 
-<Breadcrumbs
-	items={[
-		{
-			type: "home",
-			onClick: () => dispatch("goBack", { clear: true }),
-		},
-		{
-			type: "folder",
-			folder: sharedFolder,
-		},
-	]}
-/>
 
 <div style="padding: 1em; margin: 1em; background: var(--background-secondary)">
 	<p style="margin: 1em; text-align: center">
