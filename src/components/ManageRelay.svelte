@@ -536,7 +536,7 @@
 	{#if $remoteFolders.values().length > 0 && !$hasDownloadedFolders && !$relay.owner}
 		<div class="hint-callout-wrapper">
 			<Callout title="Hint">
-				Click the <Download class="svg-icon hint-icon" /> button below to add a Shared Folder to your vault and start collaborating.
+				Click the <Download class="svg-icon hint-icon" /> button below to add a channel to your vault and start collaborating.
 			</Callout>
 			<button class="hint-dismiss" on:click={() => hintDismissed.set(true)} aria-label="Dismiss hint">
 				<X class="svg-icon" />
@@ -545,7 +545,7 @@
 	{:else if $remoteFolders.values().length === 0 && $relay.owner}
 		<div class="hint-callout-wrapper">
 			<Callout title="Hint">
-				Add a Shared Folder to this Relay.
+				Add a channel to this relay.
 			</Callout>
 			<button class="hint-dismiss" on:click={() => hintDismissed.set(true)} aria-label="Dismiss hint">
 				<X class="svg-icon" />
@@ -555,7 +555,7 @@
 {/if}
 
 {#if $canRenameRelay}
-	<SettingItem name="Name" description="Set the Relay Server's name.">
+	<SettingItem name="Name" description="Set the relay's name.">
 		<input
 			type="text"
 			spellcheck="false"
@@ -569,7 +569,7 @@
 	</SettingItem>
 {/if}
 
-<SettingItemHeading name="Shared Folders on this Relay Server">
+<SettingItemHeading name="Channels on this relay">
 	{#if $canManageUsers && $shouldShowToggle}
 		<button
 			class="admin-toggle-btn"
@@ -582,36 +582,29 @@
 <SettingGroup>
 	{#each $remoteFolders.values() as remote}
 		{#if $viewAsAdmin ? get(plugin.relayManager.userCan(["folder", "manage_users"], remote)) : get(plugin.relayManager.userCan(["folder", "read_content"], remote))}
-			<SlimSettingItem>
+			<SlimSettingItem
+				clickable={true}
+				on:click={() => {
+					dispatch("manageRemoteFolder", {
+						remoteFolder: remote,
+					});
+				}}
+			>
 				<RemoteFolder
 					remoteFolder={remote}
 					slot="name"
-					on:manageRemoteFolder={() => {
-						dispatch("manageRemoteFolder", {
-							remoteFolder: remote,
-						});
-					}}>{remote.name}</RemoteFolder
+				>{remote.name}</RemoteFolder
 				>
 				{#if !$sharedFolders.some((sharedFolder) => sharedFolder.guid === remote.guid) && get(plugin.relayManager.userCan(["folder", "read_content"], remote))}
-					<SettingsControl
-						on:settings={debounce(() => {
+					<button
+						class="mod-cta system3-button"
+						on:click|stopPropagation={debounce(() => {
 							handleAddToVault(remote);
 						})}
-						label="Add to vault"
 					>
-						<Download
-							class="svg-icon lucide-settings"
-							props={{ class: "svg-icon lucide-settings" }}
-						/>
-					</SettingsControl>
+						Add to vault
+					</button>
 				{/if}
-				<SettingsControl
-					on:settings={debounce(() => {
-						dispatch("manageRemoteFolder", {
-							remoteFolder: remote,
-						});
-					})}
-				></SettingsControl>
 			</SlimSettingItem>
 		{/if}
 	{/each}
@@ -619,7 +612,7 @@
 	<SettingItem description="" name="">
 		<button
 			class="mod-cta"
-			aria-label="Select a folder to share it with this Relay Server"
+			aria-label="Select a folder to share it with this relay"
 			on:click={debounce(() => {
 				if (relay.version === 0) {
 					// For relay version 0, go directly to folder selection
@@ -721,7 +714,7 @@
     -->
 <SettingItemHeading
 	name="Sharing"
-	helpText="Share keys can be shared with collaborators so that they can join the Relay Server. Once you have added all of your collaborators, you can disable the share key to prevent anyone from joining, even if they have the key."
+	helpText="Share keys can be shared with collaborators so that they can join the relay. Once you have added all of your collaborators, you can disable the share key to prevent anyone from joining, even if they have the key."
 ></SettingItemHeading>
 
 <SettingGroup>
@@ -731,15 +724,15 @@
 		<fragment slot="description">
 			{#if $canManageSharing}
 				<div class="setting-item-description">
-					Allow others to join this Relay Server with a Share Key.
+					Allow others to join this relay with a share key.
 				</div>
 			{:else if $isShareKeyEnabled}
 				<div class="setting-item-description">
-					The owner of this Relay Server has enabled key sharing.
+					The owner of this relay has enabled key sharing.
 				</div>
 			{:else}
 				<div class="setting-item-description mod-warning">
-					The owner of this Relay Server has disabled key sharing.
+					The owner of this relay has disabled key sharing.
 				</div>
 			{/if}
 		</fragment>
@@ -921,9 +914,9 @@
 			{/await}
 			{#if relay.provider.publicKey}
 				<div class="relay-auth-section">
-					<div class="setting-item-name">Relay Server Configuration</div>
+					<div class="setting-item-name">Relay configuration</div>
 					<div class="setting-item-description">
-						Copy this configuration to your Relay Server's TOML file.
+						Copy this configuration to your relay's TOML file.
 					</div>
 					{#if loadingRelayConfig}
 						<div class="loading-message">Loading configuration...</div>
@@ -946,8 +939,8 @@
 	<SettingItemHeading name="Membership"></SettingItemHeading>
 	<SettingGroup>
 		<SettingItem
-			name="Leave Relay Server"
-			description="Leave the Relay Server. Local data is preserved."
+			name="Leave relay"
+			description="Leave the relay. Local data is preserved."
 		>
 			<button
 				class="mod-warning"
@@ -965,14 +958,14 @@
 	<SettingItemHeading name="Danger zone"></SettingItemHeading>
 	<SettingGroup>
 		<SettingItem
-			name="Destroy Relay Server"
-			description="This will destroy the Relay Server (deleting all data on the server). Local data is preserved."
+			name="Destroy relay"
+			description="This will destroy the relay (deleting all data on the server). Local data is preserved."
 		>
 			{#if $subscriptions.values().length > 0 && !$subscriptions.values()[0].cancelAt}
 				<button
 					disabled={true}
 					class="mod-warning"
-					aria-label="Cancel subscription to destroy Relay Server."
+					aria-label="Cancel subscription to destroy relay."
 				>
 					Destroy
 				</button>

@@ -27,7 +27,7 @@
 		</span>
 		<span
 			class="satellite system3-icon system3-{status}"
-			aria-label={`${remote?.relay.name || "Relay Server"} (${status})`}
+			aria-label={`${remote?.relay.name || "Relay"} (${status})`}
 		>
 			<Satellite class="inline-icon" />
 		</span>

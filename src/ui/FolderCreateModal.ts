@@ -24,7 +24,7 @@ export class FolderCreateModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl("h2", { text: "Create Shared Folder" });
+		contentEl.createEl("h2", { text: "Create channel" });
 
 		// Folder path input
 		new Setting(contentEl)

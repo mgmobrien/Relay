@@ -474,7 +474,7 @@ export default class Live extends Plugin {
 		if (flags().enableSelfManageHosts) {
 			this.addCommand({
 				id: "register-host",
-				name: "Register self-hosted Relay Server",
+				name: "Register self-hosted relay",
 				callback: () => {
 					const modal = new SelfHostModal(
 						this.app,

@@ -237,7 +237,7 @@
 <div class="self-host-modal">
 	<div class="setting-item-description" style="margin-bottom: 16px;">
 		<p>
-			Create a new self-hosted Relay Server. Select an existing host or add a
+			Create a new self-hosted relay. Select an existing host or add a
 			new one.
 		</p>
 	</div>
@@ -245,7 +245,7 @@
 	<!-- Owner Selector -->
 	<SettingItem
 		name="Owner"
-		description="Select who will own this self-hosted relay server."
+		description="Select who will own this self-hosted relay."
 	>
 		<select
 			class="owner-select"
@@ -271,7 +271,7 @@
 
 	<!-- Combined Host List -->
 	<div class="host-list-section">
-		<div class="setting-item-name">Relay Server URL</div>
+		<div class="setting-item-name">Relay URL</div>
 		<div class="setting-item-description">
 			This should be accessible to users within your private network, but not
 			exposed to the public internet.
@@ -321,9 +321,9 @@
 	<!-- Public Key Section - only show when adding new provider -->
 	{#if !$selectedProvider}
 		<div class="public-key-section">
-			<div class="setting-item-name">Relay Server Configuration</div>
+			<div class="setting-item-name">Relay configuration</div>
 			<div class="setting-item-description">
-				Copy this configuration to your Relay Server's TOML file.
+				Copy this configuration to your relay's TOML file.
 			</div>
 			{#if loadingConfig}
 				<div class="loading-message">Loading configuration...</div>
@@ -348,7 +348,7 @@
 			{#if isCreating}
 				Creating...
 			{:else}
-				Create Relay Server
+				Create relay
 			{/if}
 		</button>
 	</div>

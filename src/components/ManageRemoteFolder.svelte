@@ -414,8 +414,8 @@
 		style="padding: 1em; margin: 1em; background: var(--background-secondary)"
 	>
 		<p style="margin: 1em; text-align: center">
-			As Relay Server owner, you can manage this Shared Folder but cannot access
-			its contents. You must be added to the Shared Folder in order to
+			As relay owner, you can manage this channel but cannot access
+			its contents. You must be added to the channel in order to
 			collaborate.
 		</p>
 	</div>
@@ -424,7 +424,7 @@
 {#if $canRenameFolder}
 	<SettingItem
 		name="Name"
-		description="Set the Shared Folder's default name. A Shared Folder can always be renamed locally."
+		description="Set the channel's default name. A channel can always be renamed locally."
 	>
 		<input
 			type="text"
@@ -458,7 +458,7 @@
 		name="Users with access"
 		helpText={isPrivate
 			? ""
-			: "This folder is accessible to everyone on this Relay Server."}
+			: "This folder is accessible to everyone on this relay."}
 	>
 		{#if $remoteFolder.private && $canManageUsers}
 			<div
@@ -608,11 +608,11 @@
 			{/if}
 			{#if $canDeleteFolder}
 				<SettingItem
-					name="Remove from Relay Server"
-					description={`Deletes the remote folder from the Relay Server. Local files will be preserved.`}
+					name="Remove from relay"
+					description={`Deletes the channel from the relay. Local files will be preserved.`}
 				>
 					<button class="mod-destructive" on:click={debounce(handleDeleteRemote)}>
-						Delete from Relay Server
+						Delete from relay
 					</button>
 				</SettingItem>
 			{/if}
@@ -621,7 +621,7 @@
 		{#if $folderStore}
 			<SettingItem
 				name="Delete from vault"
-				description="Delete the local Shared Folder and all of its contents."
+				description="Delete the local channel and all of its contents."
 			>
 				<button
 					class="mod-warning"

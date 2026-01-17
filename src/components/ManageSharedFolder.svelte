@@ -46,7 +46,7 @@
 
 <div style="padding: 1em; margin: 1em; background: var(--background-secondary)">
 	<p style="margin: 1em; text-align: center">
-		This Shared Folder is not on a Relay Server, or else you do not have
+		This channel is not on a relay, or else you do not have
 		permission to access it.
 	</p>
 </div>
@@ -70,7 +70,7 @@
 
 		<SettingItem
 			name="Delete from vault"
-			description="Delete the local Shared Folder and all of its contents."
+			description="Delete the local channel and all of its contents."
 		>
 			<button
 				class="mod-warning"

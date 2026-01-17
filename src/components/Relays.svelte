@@ -155,7 +155,7 @@
 		if (availableFolders.length === 0) {
 			if (totalRemoteFolders === 0) {
 				noFoldersMessage =
-					"Join a Relay Server, or add a Shared Folder on another device.";
+					"Join a relay, or add a channel on another device.";
 			} else {
 				noFoldersMessage = "All remote folders are already in your vault.";
 			}
@@ -192,7 +192,7 @@
 	}
 </script>
 
-<SettingItemHeading name="Join a Relay Server"></SettingItemHeading>
+<SettingItemHeading name="Join a relay"></SettingItemHeading>
 <SettingGroup>
 	<SettingItem
 		name="Share key"
@@ -219,27 +219,25 @@
 </SettingGroup>
 
 <SettingItemHeading
-	helpText="A Relay Server coordinates real-time updates between collaborators. You can add collaborators and share folders on the Relay Server's settings page."
+	helpText="A relay coordinates real-time updates between collaborators. You can add collaborators and share folders on the relay's settings page."
 >
 	<span slot="name" style="display: inline-flex; align-items: center">
-		Relay Servers
+		Relays
 	</span>
 </SettingItemHeading>
 <SettingGroup>
 	{#each $relays.values().filter(hasPermissionParents).sort(sortFn) as relay}
-		<SlimSettingItem>
+		<SlimSettingItem
+			clickable={true}
+			on:click={() => handleManageRelay(relay)}
+		>
 			<Satellite slot="name" {relay} on:manageRelay>
 				{#if relay.name}
 					{relay.name}
 				{:else}
-					<span class="faint">(Untitled Relay Server)</span>
+					<span class="faint">(Untitled relay)</span>
 				{/if}
 			</Satellite>
-			<SettingsControl
-				on:settings={() => {
-					handleManageRelay(relay);
-				}}
-			></SettingsControl>
 		</SlimSettingItem>
 	{/each}
 	<SlimSettingItem description="" name="">
@@ -254,16 +252,28 @@
 
 <SettingItemHeading
 	name="My vault"
-	helpText="The following Shared Folders have been added to your vault. You can see what Relay Server a Shared Folder is connected to below."
+	helpText="The following channels have been added to your vault. You can see what relay a channel is connected to below."
 ></SettingItemHeading>
 <SettingGroup>
 	{#if $sharedFolders.items().length === 0}
 		<SettingItem
-			description="No shared folders on this device. Share folders from a Relay Server's settings page to begin collaboration."
+			description="No channels on this device. Share folders from a relay's settings page to begin collaboration."
 		/>
 	{/if}
 	{#each $sharedFolders.items().sort(folderSort) as folder}
-		<SlimSettingItem>
+		<SlimSettingItem
+			clickable={true}
+			on:click={() => {
+				if (folder.remote) {
+					handleManageRemoteFolder(folder.remote);
+				} else {
+					const relay = $relays.values().find((relay) => {
+						return folder.remote?.relay.guid === relay.guid;
+					});
+					handleManageSharedFolder(folder, relay);
+				}
+			}}
+		>
 			<SharedFolderSpan
 				on:manageSharedFolder
 				on:manageRemoteFolder
@@ -271,33 +281,17 @@
 				{folder}
 				slot="name"
 			/>
-			{#if folder.remote}
-				<SettingsControl
-					on:settings={debounce(() => {
-						handleManageRemoteFolder(folder.remote);
-					})}
-				></SettingsControl>
-			{:else}
-				<SettingsControl
-					on:settings={debounce(() => {
-						const relay = $relays.values().find((relay) => {
-							return folder.remote?.relay.guid === relay.guid;
-						});
-						handleManageSharedFolder(folder, relay);
-					})}
-				></SettingsControl>
-			{/if}
 		</SlimSettingItem>
 	{/each}
 
 	<SlimSettingItem name="">
 		<button
 			class="mod-cta system3-button"
-			aria-label="Add remote folder to vault"
+			aria-label="Add channel to vault"
 			on:click={debounce(handleAddFolder)}
 			style="max-width: 11em"
 		>
-			Add remote folder
+			Add channel to vault
 		</button>
 	</SlimSettingItem>
 </SettingGroup>
@@ -305,7 +299,7 @@
 	<div class="spacer"></div>
 	<SettingItemHeading
 		name="Subscriptions"
-		helpText="Subscriptions are tied to each Relay Server, not to your user account. Modify and cancel your subscription via our payment processor Stripe."
+		helpText="Subscriptions are tied to each relay, not to your user account. Modify and cancel your subscription via our payment processor Stripe."
 	></SettingItemHeading>
 	<SettingGroup>
 		{#each $subscriptions.values() as subscription}
@@ -314,17 +308,19 @@
 				description={subscription.cancelAt
 					? getActiveForMessage(subscription.cancelAt)
 					: ""}
+				clickable={true}
+				on:click={() => handleManageRelay(subscription.relay)}
 			>
 				<Satellite slot="name" relay={subscription.relay} on:manageRelay>
 					{#if subscription.relay.name}
 						{subscription.relay.name}
 					{:else}
-						<span class="faint">(Untitled Relay Server)</span>
+						<span class="faint">(Untitled relay)</span>
 					{/if}
 				</Satellite>
 				<button
 					class="mod-cta system3-button"
-					on:click={debounce(async () => {
+					on:click|stopPropagation={debounce(async () => {
 						if (!subscription.token) {
 							const token =
 								await plugin.relayManager.getSubscriptionToken(subscription);
