@@ -63,6 +63,7 @@
 
 	let currentRelay: Relay | undefined;
 	let remoteFolder: RemoteSharedFolder | undefined;
+	let highlightSection: string | undefined;
 	const history: View[] = [{ component: Relays }];
 
 	export let close: () => void;
@@ -82,6 +83,7 @@
 		currentRelay = undefined;
 		sharedFolder = undefined;
 		remoteFolder = undefined;
+		highlightSection = undefined;
 
 		if (path === "/") {
 			currentComponent = Relays;
@@ -107,6 +109,7 @@
 			if (id) {
 				sharedFolder = sharedFolders.find((f) => f.guid === id);
 				const relayId = urlParams.get("relay");
+				highlightSection = urlParams.get("highlight") || undefined;
 				if (relayId) {
 					currentRelay = relayManager.relays.find(
 						(relay) => relay.guid === relayId || relay.id === relayId,
@@ -281,6 +284,7 @@
 			{sharedFolders}
 			{relayRoles}
 			folderRoles={relayManager.folderRoles}
+			highlight={highlightSection}
 			on:goBack={handleGoBack}
 			on:close={handleClose}
 			on:manageRelay={handleManageRelayEvent}

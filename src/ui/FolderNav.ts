@@ -316,12 +316,13 @@ class QueueWatcherVisitor extends BaseVisitor<QueueWatcher> {
 }
 
 class FilePillDecoration {
-	pill?: TextPill;
+	pill?: UploadPill;
 	unsubscribes: Unsubscriber[] = [];
 
 	constructor(
 		private el: HTMLElement,
 		public file: SyncFile,
+		private openSettings: (path: string) => void,
 	) {
 		this.el.querySelectorAll(".system3-uploadpill").forEach((el) => {
 			el.remove();
@@ -342,17 +343,31 @@ class FilePillDecoration {
 			this.pill?.$destroy();
 			return;
 		}
+
+		const isStorageError = this.file.uploadError
+			?.toLowerCase()
+			.includes("storage");
+		const props = {
+			text: this.file.tag,
+			label: isStorageError
+				? "This file can't sync — no storage quota. Click to view sync settings."
+				: this.file.uploadError || "Upload status",
+			color: undefined as string | undefined,
+			onclick: isStorageError
+				? () =>
+						this.openSettings(
+							`/shared-folders?id=${this.file.sharedFolder.guid}&highlight=sync`,
+						)
+				: undefined,
+		};
+
 		if (!this.pill) {
 			this.pill = new UploadPill({
 				target: this.el,
-				props: {
-					text: this.file.tag,
-				},
+				props,
 			});
 		} else {
-			this.pill.$set({
-				text: this.file.tag,
-			});
+			this.pill.$set(props);
 		}
 	}
 
@@ -367,6 +382,10 @@ class FilePillDecoration {
 }
 
 class FilePillVisitor extends BaseVisitor<FilePillDecoration> {
+	constructor(private openSettings: (path: string) => void) {
+		super();
+	}
+
 	visitFile(
 		tfile: TFile,
 		item: FileItem,
@@ -386,7 +405,11 @@ class FilePillVisitor extends BaseVisitor<FilePillDecoration> {
 						if (storage && storage.file === file) {
 							return storage;
 						}
-						return new FilePillDecoration(item.selfEl, file);
+						return new FilePillDecoration(
+							item.selfEl,
+							file,
+							this.openSettings,
+						);
 					}
 				} catch (e) {
 					const error = curryLog("FilePillVisitor.visitFile", "error");
@@ -651,6 +674,7 @@ export class FolderNavigationDecorations {
 		workspace: Workspace,
 		sharedFolders: SharedFolders,
 		backgroundSync: BackgroundSync,
+		private openSettings: (path: string) => void,
 	) {
 		this.vault = vault;
 		this.workspace = workspace;
@@ -727,7 +751,7 @@ export class FolderNavigationDecorations {
 				),
 			);
 		});
-		visitors.push(new FilePillVisitor());
+		visitors.push(new FilePillVisitor(this.openSettings));
 		visitors.push(new NotSyncedPillVisitor());
 		return visitors;
 	}

@@ -33,8 +33,10 @@
 	export let sharedFolders: SharedFolders;
 	export let relayRoles: ObservableMap<string, RelayRole>;
 	export let folderRoles: ObservableMap<string, FolderRole>;
+	export let highlight: string | undefined = undefined;
 
 	let displayName: string = remoteFolder.name;
+	let syncSection: HTMLElement;
 
 	export let errorLog = curryLog("ManageRemoveFolder.svelte", "error");
 
@@ -101,6 +103,12 @@
 	onMount(() => {
 		if (nameInput && nameInput.value === "") {
 			nameInput.focus();
+		}
+		if (highlight === "sync" && syncSection) {
+			// Small delay to ensure DOM is ready
+			setTimeout(() => {
+				syncSection.scrollIntoView({ behavior: "smooth", block: "center" });
+			}, 100);
 		}
 	});
 
@@ -531,7 +539,7 @@
 <div class="spacer"></div>
 
 {#if $folderStore && $syncSettings && $relayStore}
-	<div class="local-settings">
+	<div class="local-settings" class:highlight={highlight === "sync"} bind:this={syncSection}>
 		<SettingItemHeading
 			name="Sync settings for this device"
 			helpText="You must have attachment storage available in order to sync attachments."
@@ -645,6 +653,17 @@
 		margin-left: -1em;
 		padding-left: 1em;
 		border-left: 1px solid var(--color-accent);
+	}
+	.local-settings.highlight {
+		animation: pulse-highlight 2s ease-out;
+	}
+	@keyframes pulse-highlight {
+		0% {
+			background-color: var(--interactive-accent);
+		}
+		100% {
+			background-color: transparent;
+		}
 	}
 	.system3-input-invalid {
 		border: 1px solid var(--color-red) !important;
