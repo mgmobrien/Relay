@@ -4,9 +4,17 @@
 	export let color: string | undefined = undefined;
 	export let onclick: (() => void) | undefined = undefined;
 
+	function handleClick(e: MouseEvent) {
+		if (onclick) {
+			e.stopPropagation();
+			onclick();
+		}
+	}
+
 	function handleKeypress(e: KeyboardEvent) {
 		if ((e.key === "Enter" || e.key === " ") && onclick) {
 			e.preventDefault();
+			e.stopPropagation();
 			onclick();
 		}
 	}
@@ -19,7 +27,7 @@
 	role={onclick ? "button" : undefined}
 	tabindex={onclick ? 0 : undefined}
 	style={color ? `color:${color}` : ""}
-	on:click={onclick}
+	on:click={handleClick}
 	on:keypress={handleKeypress}
 >
 	<span>{text}</span>
