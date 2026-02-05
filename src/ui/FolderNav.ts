@@ -344,7 +344,7 @@ class FilePillDecoration {
 			return;
 		}
 
-		const isStorageError = this.file.uploadError
+		const isStorageError = this.file.tag
 			?.toLowerCase()
 			.includes("storage");
 		const props = {
