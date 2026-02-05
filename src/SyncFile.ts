@@ -304,6 +304,12 @@ export class SyncFile
 			this.hashStore,
 		);
 
+		// Restore any persisted upload error
+		const persistedError = this.sharedFolder.uploadErrors.get(path);
+		if (persistedError) {
+			this.uploadError = persistedError;
+		}
+
 		this.log("created");
 	}
 
@@ -385,6 +391,7 @@ export class SyncFile
 				await this.sharedFolder.cas.writeFile(this);
 				await this.sharedFolder.markUploaded(this);
 				this.uploadError = undefined;
+				this.sharedFolder.uploadErrors.delete(this.path);
 				this.notifyListeners();
 			} catch (error) {
 				let errorMessage = "Failed to push file";
@@ -394,6 +401,7 @@ export class SyncFile
 					//pass
 				}
 				this.uploadError = errorMessage.replace(/^Error:/, "").trim();
+				this.sharedFolder.uploadErrors.set(this.path, this.uploadError);
 				this.notifyListeners();
 			}
 		}

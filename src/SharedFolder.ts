@@ -147,6 +147,7 @@ export class SharedFolder extends HasProvider {
 	private syncRequestedDuringSync: boolean = false;
 	private authoritative: boolean;
 	private pendingUpload: LocalStorage<string>;
+	uploadErrors: LocalStorage<string>;
 	private unsubscribes: Unsubscriber[] = [];
 	private storageQuota?: number;
 	private pendingDeletes: Set<string> = new Set();
@@ -194,6 +195,15 @@ export class SharedFolder extends HasProvider {
 					guid,
 				);
 				this.pendingUpload.delete(vpath);
+			}
+		});
+		this.uploadErrors = new LocalStorage<string>(
+			`${appId}-system3-relay/folders/${this.guid}/uploadErrors`,
+		);
+		// Clean up stale upload errors for files that no longer exist
+		this.uploadErrors.forEach((error, vpath) => {
+			if (!this.existsSync(vpath)) {
+				this.uploadErrors.delete(vpath);
 			}
 		});
 		this.relayManager = relayManager;
